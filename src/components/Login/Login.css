@@ -1,0 +1,148 @@
+/* Login.css - Clean minimal design */
+
+/* Main container with light background */
+.login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding: 1rem;
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* Login form container - clean white card */
+.loginForm {
+  width: 100%;
+  max-width: 400px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 2rem;
+  position: relative;
+  border: 1px solid #e2e8f0;
+}
+
+/* Input group styling */
+.loginForm .input-group {
+  margin-bottom: 1.25rem;
+}
+
+.loginForm label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+}
+
+.loginForm input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  color: #2d3748;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.loginForm input::placeholder {
+  color: #a0aec0;
+}
+
+.loginForm input:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.loginForm input:hover {
+  border-color: #cbd5e0;
+}
+
+/* Submit button styling */
+.loginForm button[type="submit"] {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #3182ce;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+  letter-spacing: 0.025em;
+}
+
+.loginForm button[type="submit"]:hover {
+  background: #2c5aa0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3);
+}
+
+.loginForm button[type="submit"]:active {
+  transform: translateY(0);
+}
+
+.loginForm button[type="submit"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.3);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .login {
+    padding: 1rem;
+  }
+  
+  .loginForm {
+    max-width: 100%;
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login {
+    padding: 0.5rem;
+  }
+  
+  .loginForm {
+    padding: 1rem;
+    border-radius: 8px;
+  }
+  
+  .loginForm input {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .loginForm button[type="submit"] {
+    padding: 0.625rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Loading state */
+.loginForm button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.loginForm button[type="submit"]:disabled:hover {
+  background: #3182ce;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Enhanced accessibility */
+.loginForm input:focus-visible,
+.loginForm button:focus-visible {
+  outline: 2px solid #3182ce;
+  outline-offset: 2px;
+}
