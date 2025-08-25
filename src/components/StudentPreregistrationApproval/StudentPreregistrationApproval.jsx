@@ -38,6 +38,24 @@ const StudentPreregistrationApproval = ({ iid }) => {
         );
     };
 
+    // Select All functionality
+    const handleSelectAll = () => {
+        const filteredPendingStudents = filterStudents(
+            preregdata?.filter((student) => student.accept_reject !== true) || []
+        );
+
+        const allPendingUIDs = filteredPendingStudents.map(student => student.uid);
+        const notYetSelected = allPendingUIDs.filter(uid => !studentUIDs.includes(uid));
+
+        if (notYetSelected.length > 0) {
+            // Select all filtered pending students
+            setStudentUIDs(prev => [...prev, ...notYetSelected]);
+        } else {
+            // Deselect all filtered pending students
+            setStudentUIDs(prev => prev.filter(uid => !allPendingUIDs.includes(uid)));
+        }
+    };
+
     const handleUpdateStudents = async () => {
         await dispatch(update_students(studentUIDs));
         setStudentUIDs([]);
@@ -58,16 +76,17 @@ const StudentPreregistrationApproval = ({ iid }) => {
 
     const getCourseTypeBadge = (type) => {
         const types = {
-            FE: { class: 'type-fe', text: 'FE' },
-            PE: { class: 'type-pe', text: 'PE' },
-            OE: { class: 'type-oe', text: 'OE' },
-            IE: { class: 'type-ie', text: 'IE' },
+            fe: { class: 'type-fe', text: 'FE' },
+            pe: { class: 'type-pe', text: 'PE' },
+            oe: { class: 'type-oe', text: 'OE' },
+            ie: { class: 'type-ie', text: 'IE' },
         };
-        return types[type] || { class: 'type-default', text: type };
+        return types[type?.toLowerCase()] || { class: 'type-default', text: type };
     };
 
     const getCourseModeLabel = (mode) => {
-        return mode === 'audit' ? 'Audit' : 'Credit';
+        if (!mode) return '';
+        return mode.toLowerCase() === 'audit' ? 'Audit' : 'Credit';
     };
 
     // Filter and search logic
@@ -80,15 +99,25 @@ const StudentPreregistrationApproval = ({ iid }) => {
                 student.course_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 student.course_code.toLowerCase().includes(searchTerm.toLowerCase());
 
-            const matchesBranch = branchFilter === '' || student.student.branch === branchFilter;
-            const matchesCourseType = courseTypeFilter === '' || student.pre_reg_course_type === courseTypeFilter;
-            const matchesCourseMode = courseModeFilter === '' || student.pre_reg_course_mode === courseModeFilter;
+            // ✅ make branch comparison case-insensitive (because we normalize unique values)
+            const matchesBranch =
+                branchFilter === '' ||
+                student.student.branch?.toLowerCase() === branchFilter;
+
+            // ✅ make type/mode comparisons case-insensitive (normalized values)
+            const matchesCourseType =
+                courseTypeFilter === '' ||
+                student.pre_reg_course_type?.toLowerCase() === courseTypeFilter;
+
+            const matchesCourseMode =
+                courseModeFilter === '' ||
+                student.pre_reg_course_mode?.toLowerCase() === courseModeFilter;
 
             return matchesSearch && matchesBranch && matchesCourseType && matchesCourseMode;
         });
     };
 
-    // Get unique values for filters
+    // ✅ Deduplicate and normalize values for filters (added logic)
     const getUniqueValues = (data, path) => {
         if (!data) return [];
         const values = data
@@ -96,7 +125,8 @@ const StudentPreregistrationApproval = ({ iid }) => {
                 const keys = path.split('.');
                 return keys.reduce((obj, key) => obj?.[key], item);
             })
-            .filter(Boolean);
+            .filter(Boolean)
+            .map((v) => (typeof v === 'string' ? v.toLowerCase() : String(v).toLowerCase()));
         return [...new Set(values)].sort();
     };
 
@@ -117,6 +147,10 @@ const StudentPreregistrationApproval = ({ iid }) => {
     const filteredApprovedStudents = filterStudents(
         preregdata?.filter((student) => student.accept_reject === true) || []
     );
+
+    // Check if all filtered pending students are selected
+    const allFilteredSelected = filteredPendingStudents.length > 0 &&
+        filteredPendingStudents.every(student => studentUIDs.includes(student.uid));
 
     return (
         <div className="student-prereg-area">
@@ -146,11 +180,16 @@ const StudentPreregistrationApproval = ({ iid }) => {
                     </div>
 
                     <div className="filter-row">
-                        <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)} className="filter-select">
+                        <select
+                            value={branchFilter}
+                            onChange={(e) => setBranchFilter(e.target.value)}
+                            className="filter-select"
+                        >
                             <option value="">All Branches</option>
                             {uniqueBranches.map((branch) => (
                                 <option key={branch} value={branch}>
-                                    {branch}
+                                    {/* show in upper-case (or keep as-is if you prefer) */}
+                                    {branch.toUpperCase()}
                                 </option>
                             ))}
                         </select>
@@ -163,7 +202,7 @@ const StudentPreregistrationApproval = ({ iid }) => {
                             <option value="">All Course Types</option>
                             {uniqueCourseTypes.map((type) => (
                                 <option key={type} value={type}>
-                                    {type}
+                                    {getCourseTypeBadge(type).text}
                                 </option>
                             ))}
                         </select>
@@ -187,8 +226,27 @@ const StudentPreregistrationApproval = ({ iid }) => {
             {/* Pending Students */}
             <div className="card">
                 <div className="card-header">
-                    <h3 className="card-title">Pending Pre-Registrations</h3>
-                    <span className="student-count">{filteredPendingStudents.length} pending</span>
+                    <div className="card-title-section">
+                        <h3 className="card-title">Pending Pre-Registrations</h3>
+                        <span className="student-count">{filteredPendingStudents.length} pending</span>
+                    </div>
+
+                    {filteredPendingStudents.length > 0 && (
+                        <div className="select-all-section">
+                            <label className="select-all-checkbox">
+                                <input
+                                    type="checkbox"
+                                    checked={allFilteredSelected}
+                                    onChange={handleSelectAll}
+                                    className="select-all-input"
+                                />
+                                <span className="select-all-checkmark"></span>
+                                <span className="select-all-label">
+                                    {allFilteredSelected ? 'Deselect All' : 'Select All'}
+                                </span>
+                            </label>
+                        </div>
+                    )}
                 </div>
 
                 <div className="card-content">
@@ -244,8 +302,8 @@ const StudentPreregistrationApproval = ({ iid }) => {
                                                             <span className={`course-type-badge ${courseType.class}`}>{courseType.text}</span>
                                                             <span
                                                                 className={`course-mode-badge ${student.pre_reg_course_mode === 'audit'
-                                                                        ? 'mode-audit'
-                                                                        : 'mode-credit'
+                                                                    ? 'mode-audit'
+                                                                    : 'mode-credit'
                                                                     }`}
                                                             >
                                                                 {getCourseModeLabel(student.pre_reg_course_mode)}
